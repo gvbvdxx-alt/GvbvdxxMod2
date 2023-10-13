@@ -1,0 +1,864 @@
+var url = './VM/scratch-vm.min.js?n=1';
+var url2 = './VM/extension worker.js?n=1';
+var url3 = './VM/extension worker.js.map?n=1';
+var storedText;
+fetch(url,{mode:"cors"})
+  .then(function(response) {
+    response.text().then(function(text) {
+		window.downloadedMultiVm = text;
+    });
+  });
+fetch(url2,{mode:"cors"})
+  .then(function(response) {
+    response.text().then(function(text) {
+		window.downloadedExtensionWorker = text;
+    });
+  });
+fetch(url3,{mode:"cors"})
+  .then(function(response) {
+    response.text().then(function(text) {
+		window.downloadedExtensionWorkerMap = text;
+    });
+  });
+var cons = document.getElementById("console");
+file = document.getElementById("fileselect");
+file.accept = ".sb3";
+window.projectFile = null;
+file.onchange = function () {
+	var reader = new FileReader();
+	reader.onload = function () {
+		window.projectFile = reader.result.split("data:application/octet-stream;base64,").pop();
+	}
+	if (file.files[0]) {
+		if (file.files[0].name.split(".").pop() == "sb3") {
+			reader.readAsDataURL(file.files[0]);
+		} else {
+			window.alert("File is not a vailid scratch project file");
+		}
+	}
+}
+window.compilerIcon = "";
+fileicon = document.getElementById("icon");
+fileicon.accept = "image/*";
+fileicon.onchange = function () {
+	var reader = new FileReader();
+	reader.onload = function () {
+		window.compilerIcon = reader.result;
+	}
+	if (fileicon.files[0]) {
+		reader.readAsDataURL(fileicon.files[0]);
+	}
+}
+function log(text) {
+	cons.innerHTML += text+"<br>";
+	cons.scrollTo(0,10000000);
+}
+function compile(opts) {
+	cons.innerHTML = "";
+	var zip = new JSZip();
+	log("geting data...");
+	var bytes = new Uint8Array(window.projectFile);
+	window.projectData = bytes;
+	log("geting options...");
+	var opt = opts;
+	
+	zip.file("vm.js", window.downloadedMultiVm, {base64: false});
+	zip.file("exension-worker.js", window.downloadedExtensionWorker, {base64: false});
+	zip.file("exension-worker.js.map", window.downloadedExtensionWorkerMap, {base64: false});
+	zip.file("project.sb3", window.projectFile, {base64: true});
+	if (opts.easymode) {
+		var projectsrc = "data:application/octet-stream;base64,"+window.projectFile;
+		zip.remove("project.sb3"); //to save space plus edit pretection
+	} else {
+		var projectsrc = "project.sb3?n=1";
+	}
+	log(`Making file "index.html"`);
+	var html = `<!DOCTYPE HTML>
+<html>
+	<!--Genarated by GvbvdxxMod2HTML-->
+	<head>
+		<title>`+opt.title+`</title>
+		<link rel="icon" href="`+window.compilerIcon+`">
+	</head>
+	<body style="background-color:black;">
+		<style>
+			#canvas{
+				width:100%;
+				height:100%;
+				position:fixed;
+				top:0;
+				left:0;
+				image-rendering:pixelated; /*Make it look pixel sharp*/
+			}
+			#monitors {
+				width:100%;
+				height:100%;
+				position:fixed;
+				top:0;
+				left:0;
+			}
+			.questionBoxFull {
+				position:fixed;
+				bottom:0;
+				left:0;
+				background-color:white;
+				width:100%;
+				height:40px;
+				border-style:solid;
+				border-width:1.7px;
+				border-color:grey;
+				border-radius:10px;
+				z-index:1000;
+			}
+			#inputOfQuestion {
+				margin-left:10px;
+				float:left;
+				height:35px;
+				width:85%;
+				border-style:solid;
+				border-width:1.7px;
+				border-color:grey;
+				border-radius:10px;
+			}
+			#checkmark {
+				width:40px;
+				height:40px;
+				float:right;
+				margin-right:10px;
+			}
+			#checkmark:hover {
+				filter:brightness(140%);
+				cursor:pointer;
+			}
+			#monitors {
+			  position: fixed;
+			  top: 0;
+			  left: 0;
+			  width:100%;
+			  height:100%;
+position: absolute; top: 50%; left: 50%; margin-left: -463.333px; margin-top: -347.5px; width: 926.667px; height: 695px;
+			}
+			.monitor {
+			  position: absolute;
+			  border: 1px solid transparent;
+			  border-radius: 0.25rem;
+			  font-size: 0.75rem;
+			  overflow: hidden;
+			  padding: 3px;
+			  white-space: pre;
+			}
+			.custom-monitor-colour .default .monitor-value,
+			.custom-monitor-colour .slider .monitor-value,
+			.custom-monitor-colour .large,
+			.custom-monitor-colour .row-value {
+				background-color: #8c8c8c;
+			}
+			.monitor {
+				color: black;
+				font-family: arial;
+				background-color: hsla(215, 100%, 95%, 1);
+				border-style: solid;
+				border-color: hsla(0, 0%, 0%, 0.15);
+			}
+			.show-monitor-box .monitor {
+			  border-color: rgba(0, 0, 0, 0.2);
+			  background-color: rgba(0, 0, 0, 0.3);
+			}
+			.monitor-label {
+			  margin: 0 5px;
+			  font-weight: bold;
+			}
+			.monitor-value {
+			  display: inline-block;
+			  vertical-align: top;
+			  min-width: 34px;
+			  text-align: center;
+			  border-radius: 0.25rem;
+			  overflow: hidden;
+			  text-overflow: ellipsis;
+			  user-select: text;
+			  transform: translateZ(0);
+			background-color: rgb(255, 140, 26);
+			color: white;
+			height: 100%;
+			}
+			.default .monitor-value,
+			.slider .monitor-value {
+			  margin: 0 5px;
+			  padding: 1px 3px;
+			}
+			.show-monitor-box .default .monitor-value,
+			.show-monitor-box .slider .monitor-value {
+			  background-color: rgba(0, 0, 0, 0.5);
+			}
+			.large {
+			  padding: 0.1rem 0.25rem;
+			  min-width: 3rem;
+			}
+			.show-monitor-box .large {
+			  background-color: rgba(0, 0, 0, 0.6);
+			}
+			.large .monitor-label {
+			  display: none;
+			}
+			.large .monitor-value {
+			  font-size: 1rem;
+			  width: 100%;
+			}
+			.list {
+			  padding: 0;
+			  overflow: hidden;
+			  overflow-x: hidden;
+			}
+			.list .monitor-label {
+			  text-align: center;
+			  padding: 3px;
+			  width: 100%;
+			  display: block;
+			  margin: 0;
+			  box-sizing: border-box;
+			  white-space: pre-wrap;
+			}
+			.list .monitor-value {
+			  display: block;
+			  overflow-y: scroll;
+			  background: #e03131;
+			  height: 93%;
+			}
+			.row {
+			  display: flex;
+			  align-items: center;
+			  padding: 2px;
+			  height: 24px;
+			  box-sizing: border-box;
+			  transform: translateZ(0);
+			}
+			.index {
+			  font-weight: bold;
+			  margin: 0 3px;
+			  flex: none;
+			}
+			.row-value {
+			  flex: auto;
+			  margin: 0 3px;
+			  text-align: left;
+			  border-radius: 0.25rem;
+			  border: 1px solid transparent;
+			  height: 22px;
+			  padding: 3px 5px;
+			  box-sizing: border-box;
+			  overflow: hidden;
+			  text-overflow: ellipsis;
+			}
+			.show-monitor-box .row-value {
+			  border-color: rgba(0, 0, 0, 0.2);
+			  background-color: rgba(0, 0, 0, 0.5);
+			}
+			.slider input {
+			  display: block;
+			  width: 100%;
+			  transform: translateZ(0);
+			}
+			.ui-button {
+				border:none;
+				width: 2rem;
+				height: 2rem;
+				padding: 0.375rem;
+				border-radius: 0.25rem;
+				user-select: none;
+				user-drag: none;
+				cursor: pointer;
+				background-color:white;
+			}
+			.ui-button:hover {
+				background-color:#d8dee9;
+			}
+			.ui-bar {
+				opacity:0.5;
+				background:white;
+				position:fixed;
+				top:0;
+				left:0;
+				width:100vw;
+				height:2rem;
+				z-index:1000000000;
+			}
+			@keyframes example {
+				0% {transform: rotate(0deg);}
+				100% {transform: rotate(360deg);}
+			}
+			/* The element to apply the animation to */
+			.loading {
+				width: 100px;
+				height: 100px;
+				animation: rotation 8s infinite linear;
+				animation-name: example;
+				animation-duration: 0.5s;
+				animation-delay: 0s;
+				animation-iteration-count: infinite;
+				position:fixed;
+				top:50%;
+				left:50%;
+				margin-top:-50px;
+				margin-left:-50px;
+				transition: 0.5s;
+			}
+		</style>
+		<div class="ui-bar" id="UiBar" hidden>
+			<button class="ui-button" onclick="vm.greenFlag();">
+				<img
+					src="data:image/svg+xml;base64,PHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNi42MyAxNy41Ij48ZGVmcz48c3R5bGU+LmNscy0xLC5jbHMtMntmaWxsOiM0Y2JmNTY7c3Ryb2tlOiM0NTk5M2Q7c3Ryb2tlLWxpbmVjYXA6cm91bmQ7c3Ryb2tlLWxpbmVqb2luOnJvdW5kO30uY2xzLTJ7c3Ryb2tlLXdpZHRoOjEuNXB4O308L3N0eWxlPjwvZGVmcz48dGl0bGU+aWNvbi0tZ3JlZW4tZmxhZzwvdGl0bGU+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNLjc1LDJBNi40NCw2LjQ0LDAsMCwxLDguNDQsMmgwYTYuNDQsNi40NCwwLDAsMCw3LjY5LDBWMTIuNGE2LjQ0LDYuNDQsMCwwLDEtNy42OSwwaDBhNi40NCw2LjQ0LDAsMCwwLTcuNjksMCIvPjxsaW5lIGNsYXNzPSJjbHMtMiIgeDE9IjAuNzUiIHkxPSIxNi43NSIgeDI9IjAuNzUiIHkyPSIwLjc1Ii8+PC9zdmc+"
+					width=16
+					height=16
+				>
+			</button>
+			<button class="ui-button" onclick="vm.stopAll();">
+				<img
+					src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDE5LjEuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IgoJIHZpZXdCb3g9IjAgMCAxNCAxNCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMTQgMTQ7IiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPHN0eWxlIHR5cGU9InRleHQvY3NzIj4KCS5zdDB7ZmlsbDojRUM1OTU5O3N0cm9rZTojQjg0ODQ4O3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS1saW5lam9pbjpyb3VuZDtzdHJva2UtbWl0ZXJsaW1pdDoxMDt9Cjwvc3R5bGU+Cjxwb2x5Z29uIGNsYXNzPSJzdDAiIHBvaW50cz0iNC4zLDAuNSA5LjcsMC41IDEzLjUsNC4zIDEzLjUsOS43IDkuNywxMy41IDQuMywxMy41IDAuNSw5LjcgMC41LDQuMyAiLz4KPC9zdmc+Cg=="
+					width=16
+					height=16
+				>
+			</button>
+		</div>
+		<canvas id="canvas" hidden></canvas>
+		
+		<div id="monitors"></div>
+		<img id="loading" class="loading" selectable=false draggable=false src="data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHdpZHRoPSI4NyIgaGVpZ2h0PSI4NyIgdmlld0JveD0iMCwwLDg3LDg3Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgtMTk2LjUsLTEzNi41KSI+PGcgZGF0YS1wYXBlci1kYXRhPSJ7JnF1b3Q7aXNQYWludGluZ0xheWVyJnF1b3Q7OnRydWV9IiBmaWxsPSJub25lIiBmaWxsLXJ1bGU9Im5vbnplcm8iIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49Im1pdGVyIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS1kYXNoYXJyYXk9IiIgc3Ryb2tlLWRhc2hvZmZzZXQ9IjAiIHN0eWxlPSJtaXgtYmxlbmQtbW9kZTogbm9ybWFsIj48cGF0aCBkPSJNMjAxLjUsMTgwYzAsLTIxLjI2Mjk2IDE3LjIzNzA0LC0zOC41IDM4LjUsLTM4LjVjMjEuMjYyOTYsMCAzOC41LDE3LjIzNzA0IDM4LjUsMzguNWMwLDIxLjI2Mjk2IC0xNy4yMzcwNCwzOC41IC0zOC41LDM4LjVjLTIxLjI2Mjk2LDAgLTM4LjUsLTE3LjIzNzA0IC0zOC41LC0zOC41eiIgc3Ryb2tlPSIjZmZmZmZmIi8+PHBhdGggZD0iTTIwNi40MjE0NiwxOTguNDQxOTdjLTMuMTM3NzgsLTUuNDE1MzggLTQuOTIxNDYsLTExLjYyOTE3IC00LjkyMTQ2LC0xOC4yMzYwNmMwLC0xMC4wNzQ3NSA0LjE0NzU2LC0xOS4yMzU0NyAxMC45MTk0NywtMjYuMDQ0OTIiIHN0cm9rZT0iI2E3YTdhNyIvPjwvZz48L2c+PC9zdmc+">
+		<div class="questionBoxFull" id="questionBox" hidden>
+		<input type="text" placeholder="type something here..." id="inputOfQuestion">
+		<img src="data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHdpZHRoPSIyMS4yIiBoZWlnaHQ9IjIxLjIiIHZpZXdCb3g9IjAsMCwyMS4yLDIxLjIiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMjkuNCwtMTY5LjQpIj48ZyBkYXRhLXBhcGVyLWRhdGE9InsmcXVvdDtpc1BhaW50aW5nTGF5ZXImcXVvdDs6dHJ1ZX0iIGZpbGwtcnVsZT0ibm9uemVybyIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtbGluZWpvaW49Im1pdGVyIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS1kYXNoYXJyYXk9IiIgc3Ryb2tlLWRhc2hvZmZzZXQ9IjAiIHN0eWxlPSJtaXgtYmxlbmQtbW9kZTogbm9ybWFsIj48cGF0aCBkPSJNMjI5LjksMTgwYzAsLTUuNTc4MDggNC41MjE5MiwtMTAuMSAxMC4xLC0xMC4xYzUuNTc4MDgsMCAxMC4xLDQuNTIxOTIgMTAuMSwxMC4xYzAsNS41NzgwOCAtNC41MjE5MiwxMC4xIC0xMC4xLDEwLjFjLTUuNTc4MDgsMCAtMTAuMSwtNC41MjE5MiAtMTAuMSwtMTAuMXoiIGZpbGw9IiMwMDdkZmYiIHN0cm9rZT0iIzAwNjJiZCIgc3Ryb2tlLWxpbmVjYXA9ImJ1dHQiLz48cGF0aCBkPSJNMjM0Ljg5NTExLDE3OS45ODE3bDMuOTA5NTgsNC42MTA4N2w2LjMwMDIsLTkuMTg1MTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9nPjwvZz48L3N2Zz4=" id="checkmark">
+		</div>
+<div
+		style="
+			position:fixed;
+			top:0;
+			left:0;
+			width:100%;
+			height:100vh;
+			background-color:black;
+			opacity:0.6;
+			z-index:100px;
+			cursor:pointer;
+		"
+		id="projectstarticon"
+		hidden
+		>
+			<img style="
+				position:fixed;
+				top:50%;
+				left:50%;
+				margin-top:-60px;
+				margin-left:-60px;
+				cursor:pointer;
+			" width=120 height=120 src="data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHdpZHRoPSI4NiIgaGVpZ2h0PSI4NiIgdmlld0JveD0iMCwwLDg2LDg2Ij48ZGVmcz48Y2xpcFBhdGggaWQ9ImNsaXAtMSI+PHBhdGggZD0iTTIxOSwyMDIuMDk4NnYtNDQuMTk3Mmg0MnY0NC4xOTcyeiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJub25lIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49Im1pdGVyIi8+PC9jbGlwUGF0aD48L2RlZnM+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTE5NywtMTM3KSI+PGcgZGF0YS1wYXBlci1kYXRhPSJ7JnF1b3Q7aXNQYWludGluZ0xheWVyJnF1b3Q7OnRydWV9IiBmaWxsLXJ1bGU9Im5vbnplcm8iIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgc3Ryb2tlLWRhc2hhcnJheT0iIiBzdHJva2UtZGFzaG9mZnNldD0iMCIgc3R5bGU9Im1peC1ibGVuZC1tb2RlOiBub3JtYWwiPjxwYXRoIGQ9Ik0yMDAsMTgwYzAsLTIyLjA5MTQgMTcuOTA4NiwtNDAgNDAsLTQwdjBjMjIuMDkxNCwwIDQwLDE3LjkwODYgNDAsNDB2MGMwLDIyLjA5MTQgLTE3LjkwODYsNDAgLTQwLDQwdjBjLTIyLjA5MTQsMCAtNDAsLTE3LjkwODYgLTQwLC00MHoiIGZpbGwtb3BhY2l0eT0iMC43NSIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSJub25lIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49Im1pdGVyIi8+PGcgY2xpcC1wYXRoPSJ1cmwoI2NsaXAtMSkiPjxwYXRoIGQ9Ik0yMjAuODk0MiwxNjIuOTUyNWMyLjgwNjYsLTIuMDg4OSA2LjIxMiwtMy4yMTcxIDkuNzEwNywtMy4yMTcxYzMuNDk4NywwIDYuOTA0MSwxLjEyODIgOS43MTA4LDMuMjE3MXYwYzIuODA2NiwyLjA4ODkgNi4yMTIxLDMuMjE3MSA5LjcxMDgsMy4yMTcxYzMuNDk4NiwwIDYuOTA0MSwtMS4xMjgyIDkuNzEwNywtMy4yMTcxdjI2LjI2NThjLTIuODA2NiwyLjA4ODkgLTYuMjEyMSwzLjIxNyAtOS43MTA3LDMuMjE3Yy0zLjQ5ODcsMCAtNi45MDQyLC0xLjEyODEgLTkuNzEwOCwtMy4yMTdjLTIuODA2NywtMi4wODg5IC02LjIxMjEsLTMuMjE3MSAtOS43MTA4LC0zLjIxNzFjLTMuNDk4NywwIC02LjkwNDEsMS4xMjgyIC05LjcxMDcsMy4yMTcxIiBmaWxsPSIjNGNiZjU2IiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWxpbmVjYXA9ImJ1dHQiIHN0cm9rZS1saW5lam9pbj0ibWl0ZXIiLz48cGF0aCBkPSJNMjIwLjg5NDIsMTYyLjk1MjVjMi44MDY2LC0yLjA4ODkgNi4yMTIsLTMuMjE3MSA5LjcxMDcsLTMuMjE3MWMzLjQ5ODcsMCA2LjkwNDEsMS4xMjgyIDkuNzEwOCwzLjIxNzF2MGMyLjgwNjYsMi4wODg5IDYuMjEyMSwzLjIxNzEgOS43MTA4LDMuMjE3MWMzLjQ5ODYsMCA2LjkwNDEsLTEuMTI4MiA5LjcxMDcsLTMuMjE3MXYyNi4yNjU4Yy0yLjgwNjYsMi4wODg5IC02LjIxMjEsMy4yMTcgLTkuNzEwNywzLjIxN2MtMy40OTg3LDAgLTYuOTA0MiwtMS4xMjgxIC05LjcxMDgsLTMuMjE3Yy0yLjgwNjcsLTIuMDg4OSAtNi4yMTIxLC0zLjIxNzEgLTkuNzEwOCwtMy4yMTcxYy0zLjQ5ODcsMCAtNi45MDQxLDEuMTI4MiAtOS43MTA3LDMuMjE3MSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNDU5OTNkIiBzdHJva2Utd2lkdGg9IjIuNTI1NTYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0yMjAuODk0MiwyMDAuMjA0NHYtNDAuNDA4OSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNDU5OTNkIiBzdHJva2Utd2lkdGg9IjMuNzg4MzMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvZz48cGF0aCBkPSJNMjQwLDIyM2MtMjMuNzQ4MiwwIC00MywtMTkuMjUxOCAtNDMsLTQzaDZjMCwyMC40MzQ1IDE2LjU2NTUsMzcgMzcsMzd6TTI4MywxODBjMCwyMy43NDgyIC0xOS4yNTE4LDQzIC00Myw0M3YtNmMyMC40MzQ1LDAgMzcsLTE2LjU2NTUgMzcsLTM3ek0yNDAsMTM3YzIzLjc0ODIsMCA0MywxOS4yNTE4IDQzLDQzaC02YzAsLTIwLjQzNDUgLTE2LjU2NTUsLTM3IC0zNywtMzd6TTI0MCwxNDNjLTIwLjQzNDUsMCAtMzcsMTYuNTY1NSAtMzcsMzdoLTZjMCwtMjMuNzQ4MiAxOS4yNTE4LC00MyA0MywtNDN6IiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWxpbmVjYXA9ImJ1dHQiIHN0cm9rZS1saW5lam9pbj0ibWl0ZXIiLz48L2c+PC9nPjwvc3ZnPg==">
+		</div>
+		<h1 style="
+		position:fixed;
+		top:50%;
+		left:50%;
+		width:100%;
+		height:100vh;
+		font-family:arial;
+		font-size:50px;
+		margin-top:30px;
+		margin-left:-210px;
+		color:white;
+		" hidden id="loadingText">`+opts.loadingScreenText+`</h1>
+		<center><h1 style="
+		position:fixed;
+		top:50%;
+		left:0;
+		width:100%;
+		height:100vh;
+		font-family:arial;
+		color:white;
+		" hidden id="errrorText">Error!<br>Make sure this has access to the .sb3 file and make sure its on a website, or electron app.</h1></center>
+		<script src="./vm.js?n=1"></script>
+		<script onerror="window.alert('OOPS were sorry but an error has been thrown, please check the devloper console for more info.')">
+			document.getElementById("UiBar").hidden = true;
+			window.vm = new GvbvdxxMod2VM.VirtualMachine();
+			
+			window.file = document.getElementById("files");
+			const storage = new GvbvdxxMod2VM.ScratchStorage();
+			let cvs = document.getElementById("canvas");
+			const render = new GvbvdxxMod2VM.Renderer(cvs);
+			const audio = new GvbvdxxMod2VM.AudioEngine();
+			const svgRenderer = GvbvdxxMod2VM.SvgRenderer;
+			vm.attachStorage(storage);
+			vm.attachRenderer(render);
+			vm.attachV2BitmapAdapter(svgRenderer);
+			vm.attachAudioEngine(audio);
+			vm.setRuntimeOptions(${JSON.stringify(opts.runtimeOpts)});
+			if (`+opt.compatibilityMode.toString()+`) {
+				vm.setCompatibilityMode(true);
+			} else {
+				vm.setCompatibilityMode(false);
+			}
+			if (`+opt.turbomode.toString()+`) {
+				vm.setTurboMode(true);
+			} else {
+				vm.setTurboMode(false);
+			}
+			var xhr = new XMLHttpRequest();
+			xhr.addEventListener('error',function (e,e2,e3) {
+				cvs.hidden = true;
+				document.getElementById("errrorText").hidden = false;
+			});
+			xhr.open('GET', '`+projectsrc+`', true);
+			xhr.responseType = 'arraybuffer';
+
+			xhr.onload = function(e) {
+			  if (this.status == 200) {
+				// get binary data as a response
+				var blob = this.response;
+				//var bytes = new Uint8Array(blob);
+				vm.start();
+				vm.loadProject(blob);
+				document.getElementById("loadingText").hidden = false;
+				cvs.hidden = true;
+				document.getElementById("loading").hidden = true;
+			  }
+			};
+
+			xhr.send();
+			//keyboard controls
+			function resiterKey(keyid,isdown) {
+				//send if the key is down
+				//example keyid: "ArrowRight"
+				//vm is scratch-vm
+				vm.postIOData('keyboard',{key:keyid,isDown:isdown});
+			}
+			let shiftkey = false
+			cvs = document.getElementById("canvas"); //we will be using it soon
+			//in older versions of my compiler, i did the check directley on the document,
+			//but with no way of disabling the down key when you pressed it, so now its disabled
+			//when your typing in an ask and wait dialog.
+			var keyDownEnabled = true;
+			document.onkeydown = function (e) {
+				if (e.key == "Shift") {
+					shiftkey = true;
+				}
+				if (keyDownEnabled) {
+					resiterKey(e.key,true);
+				}
+			}
+			document.onkeyup = function (e) {
+				if (e.key == "Shift") {
+					shiftkey = false;
+				}
+				resiterKey(e.key,false);
+			}
+			//mouse controls
+			//same thing with the comments above for the keydown event.
+			document.onmousedown = function(e) {
+				if (keyDownEnabled) {
+					mousedata.down=true;
+				}
+			}
+			document.onmouseup = function(e) {
+				mousedata.down=false;
+			}
+			window.mousedata = {x:0,y:0,down:false};
+			function sendMouse(event) {
+				try{const { x, y } = mousedata
+				var rect = cvs.getBoundingClientRect();
+				const mousePosition = { x: x - rect.left, y: y - rect.top }
+				vm.postIOData('mouse', {
+				  isDown:mousedata["down"],
+				  ...mousePosition,
+				  canvasWidth: rect.width,
+				  canvasHeight: rect.height
+				})}catch(e){
+					//try again when function called
+					//if throws an error then ignore (this fixes most bugs.)
+				};
+				setTimeout(sendMouse,1);
+				return ;
+			}
+			setTimeout(sendMouse,1);
+			document.onmousemove = function (e) {
+				mousedata={x:e.x,y:e.y};
+			}
+			//what to do when the program extucutes a ask and wait block
+			let questionBox = document.getElementById("questionBox");
+			vm.runtime.addListener('QUESTION', questionData => {
+				setTimeout(() => {
+					//do a 5 ms delay because the new ask and wait block after the last one can interupt the new one and close it.
+					if (!(questionData === null)) {
+						questionBox.hidden = false;
+						questionBox.children[0].value = ""; //make the box empty
+						questionBox.children[0].focus(); //make it focused
+						keyDownEnabled = false; //disable the keys, we are typing!
+					} else {
+						
+						//returns null when something else cancels it.
+						questionBox.hidden = true;
+						keyDownEnabled = true;
+					}
+				},5);
+			})
+			function hidebox() {
+				//hide the box because we do not need it anymore.
+				questionBox.hidden = true;
+				//send the info to the vm.
+				vm.runtime.emit('ANSWER', questionBox.children[0].value);
+				keyDownEnabled = true; //we are done typing! enable the keys!
+			}
+			questionBox.children[1].onclick = hidebox;
+			questionBox.children[0].onkeydown = function (e) {
+				if (e.key == "Enter") {
+					hidebox(); //makes it so when the user presses enter it will submit it.
+				}
+			}
+			var monitorWrapper = document.getElementById("monitors");
+			var mv = monitorWrapper; //make it easier for me to use the defined above object
+			var monitorScales = 1;
+			var monitorObjects = [];
+			var monitorIndex = 0;
+			if (`+opt.nostrech+`) {
+				//makes it change size without streching
+				cvs.style.top = "50%"; cvs.style.left = "50%"; //place in center
+				var Scale = 1;
+				var quality = 'hd';
+				function checkFullscreen() {
+					Scale = window.innerHeight/360;
+					if (quality == "hd") {
+						cvs.width = Scale*480;
+						cvs.height = Scale*360;
+						cvs.style.width = Scale*480+"px";
+						cvs.style.height = Scale*360+"px";
+					} else {
+						cvs.width = 480;
+						cvs.height = 360;
+						cvs.style.width = Scale*480+"px";
+						cvs.style.height = Scale*360+"px";
+					}
+					cvs.style.marginLeft = (Scale*480)/-2+"px";
+					cvs.style.marginTop = (Scale*360)/-2+"px";
+					mv.style.position = "absolute";
+					mv.style.top = "50%";
+					mv.style.left = "50%";
+					mv.style.marginLeft = (Scale*480)/-2+"px";
+					mv.style.marginTop = (Scale*360)/-2+"px";
+					mv.style.width = Scale*480+"px";
+					mv.style.height = Scale*360+"px";
+					var monitorIndex = 0;
+					while (monitorIndex < monitorObjects.length) {
+						var monitorobject = monitorObjects[monitorIndex];
+						var multipliedScale = Scale;
+						var multipliedScaleX = Scale*1;
+						monitorobject.div.style.left = monitorobject.x * multipliedScaleX + (monitorObjects[0].div.getBoundingClientRect().width / 4) + "px";
+						monitorobject.div.style.top = monitorobject.y *  multipliedScale + (monitorObjects[0].div.getBoundingClientRect().height / 2 * Math.sign(monitorobject.y)) + "px";
+						/**Scaling monitors (width and height)*/
+						var bounding = monitorobject.div.getBoundingClientRect();
+						if (!(monitorobject.scale)) {
+							monitorobject.scale = {};
+						}
+						if (monitorobject.scale[monitorobject.mode]) {
+							monitorobject.scale[monitorobject.mode] = {width:bounding.width,height:bounding.height};
+						}
+						monitorobject.div.style.width = "fit-content";
+						if (monitorobject.mode == 'list') {
+							monitorobject.div.style.width = monitorobject.width*Scale+"px";
+							monitorobject.div.style.height = monitorobject.height*Scale+"px";
+						} else {
+							if (monitorobject.mode == 'slider') {
+							} else {
+								monitorobject.div.style.width = "fit-content";
+								monitorobject.div.style.verticalAlign = "middle";
+								//monitorobject.div.style.height = monitorobject.height*Scale+"px";
+							}
+						}
+						
+						monitorIndex += 1;
+					}
+					setTimeout(checkFullscreen,1);
+				}
+				
+				setTimeout(checkFullscreen,1);
+			}
+			if (`+opts.addNumbersToUsername+`) {
+				vm.postIOData('userData', { username: "`+opt.username+`"+Math.round(Math.random()*100000) });
+			} else {
+				vm.postIOData('userData', { username: "`+opt.username+`" });
+			}
+			//used from HTMLifyer, and yet i still dont understand it...
+			var monitorStates = {};
+			const getVariable = (targetId, variableId) => {
+				const target = targetId
+				  ? vm.runtime.getTargetById(targetId)
+				  : vm.runtime.getTargetForStage()
+				return target.variables[variableId]
+			}
+			vm.runtime.addListener('MONITORS_UPDATE', monitors => {
+    monitors.forEach((record, id) => {
+      const {
+        value,
+        visible,
+        mode,
+        x,
+        y,
+        width,
+        height,
+        params,
+        opcode,
+        spriteName,
+        sliderMin,
+        sliderMax,
+        isDiscrete,
+        targetId
+      } = record
+
+      if (!monitorStates[id]) {
+        const label = document.createElement('span')
+        label.className = 'monitor-label'
+        const name = params.VARIABLE || params.LIST || opcode
+        label.textContent = spriteName ? spriteName+': '+name : name
+
+        const value = document.createElement('span')
+        value.className = 'monitor-value'
+
+        const monitor = document.createElement('div')
+        monitor.className = 'monitor ' + mode
+        monitor.style.left = x * Scale + 'px'
+        monitor.style.top = y * Scale + 'px';
+        monitor.append(label, value)
+
+        monitorStates[id] = { monitor, valueElem: value, wasVisible: true }
+
+        if (mode === 'slider') {
+          const slider = document.createElement('input')
+          slider.type = 'range'
+          slider.min = sliderMin
+          slider.max = sliderMax
+          slider.step = isDiscrete ? 1 : 0.01
+          // Prevent tab focus, per #54, but it deviates from Scratch
+          slider.tabIndex = -1
+          slider.addEventListener('input', () => {
+            getVariable(targetId, id).value = slider.value
+          })
+          slider.addEventListener('change', () => {
+            getVariable(targetId, id).value = slider.value
+          })
+          monitorStates[id].slider = slider
+          monitor.append(slider)
+        } else if (mode === 'list') {
+          // If the list has never been resized, the width/height will be 0.
+          // Weird!
+          monitor.style.width = (width || 100) + 'px'
+          monitor.style.height = (height || 200) + 'px'
+
+          monitorStates[id].rowElems = []
+        }
+
+        monitorWrapper.append(monitor)
+		monitorObjects.push({
+			div:monitor,
+			x:x,
+			y:y,
+			width:monitor.getBoundingClientRect().width,
+			height:monitor.getBoundingClientRect().height,
+			mode:mode
+		});
+      }
+
+      const {
+        monitor,
+        valueElem,
+        wasVisible,
+        lastValue = [],
+        slider,
+        rowElems
+      } = monitorStates[id]
+      if (visible) {
+        if (!wasVisible) {
+          monitor.style.display = null
+        }
+        const differed = Array.isArray(value)
+          ? JSON.stringify(lastValue) !== JSON.stringify(value)
+          : lastValue !== value
+        if (differed) {
+          if (Array.isArray(value)) {
+            if (lastValue.length !== rowElems.length) {
+              console.error(
+                "List monitor rowElems and lastValue lengths don't match."
+              )
+            }
+
+            value.forEach((val, i) => {
+              if (i >= lastValue.length) {
+                // Could also set width to (lastValue.length + '').length + 'ch'
+                const index = document.createElement('div')
+                index.className = 'index'
+                index.textContent = i + 1
+
+                const value = document.createElement('div')
+                value.className = 'row-value'
+
+                const row = document.createElement('div')
+                row.className = 'row'
+                row.append(index, value)
+
+                valueElem.append(row)
+                rowElems[i] = value
+              }
+
+              if (lastValue[i] !== val) {
+                rowElems[i].textContent = val
+              }
+            })
+
+            if (value.length < lastValue.length) {
+              for (const toRemove of rowElems.splice(
+                value.length,
+                lastValue.length - value.length
+              )) {
+                toRemove.parentNode.remove()
+              }
+            }
+          } else {
+            // The HTMLifier used to use Number(value.toFixed(6)) but I don't
+            // think Scratch does that for monitors
+            valueElem.textContent = value
+            if (slider) {
+              slider.value = value
+            }
+          }
+        }
+      } else if (wasVisible) {
+        monitor.style.display = 'none'
+      }
+      monitorStates[id].wasVisible = visible
+      // \`value\` is a live array
+      monitorStates[id].lastValue = Array.isArray(value) ? [...value] : value
+    })
+  })
+			  
+		var websocketID = "`+opts.servername+`"; /*Change this to the glitch project name*/
+		var projectID = "`+opts.projectid+`"; /*This will be your id for the project, so it does not overide with any cloud variables.*/
+		/*Do not change ANYTHING below this script*/
+		window.websocketcloudprovider = null
+		function openconnection() {
+				console.log("server is connecting..");
+				websocketcloudprovider = new WebSocket("wss://"+websocketID+".glitch.me");
+				websocketcloudprovider.onopen = function () {
+					console.log("connected");
+				};
+				websocketcloudprovider.onclose = function () {
+					console.log("disconnected or failed to connect, retrying...");
+					openconnection();
+				};
+				websocketcloudprovider.onmessage = function (event) {
+					try{
+					var json = JSON.parse(event.data);
+					var clouddata = json[projectID];
+					var keys = Object.keys(clouddata);
+					var index = 0;
+					while (keys.length > index) {
+						try{
+							vm.postIOData('cloud', {
+								varUpdate: { name:keys[index] , value:clouddata[keys[index]] }
+							});
+						}catch(e){}
+						index += 1;
+					}
+					}catch(e){}
+				};
+		}
+		openconnection();
+		window.gvbvdxxCloudProvider = {
+			
+			requestCloseConnection:function(){
+				
+			},
+			requestOpenConnection:function(){
+				
+			},
+			updateVariable:function (a,b) {
+				/*Updates The Variable*/
+				try{
+				websocketcloudprovider.send(JSON.stringify({
+					command:"saveData",
+					name:a,
+					value:b,
+					id:projectID
+				}));
+				}catch(e){}
+			}
+		};
+		
+		//back to project.
+		vm.runtime.emitProjectLoaded = function () {
+				//will run whenever the project finishes loading.
+				var flagscript = `+opts.clicktostart+`;
+				if (flagscript) {
+					document.getElementById("projectstarticon").hidden = false;
+					document.getElementById("loadingText").hidden = true;
+					cvs.hidden = false;
+					document.getElementById("projectstarticon").onclick = function () {
+						vm.greenFlag();
+						document.getElementById("UiBar").hidden = (!(`+opts.ui+`));
+						document.getElementById("projectstarticon").hidden = true;
+					}
+				} else {
+					vm.greenFlag();
+					document.getElementById("projectstarticon").hidden = true;
+					cvs.hidden = false;
+					document.getElementById("loadingText").hidden = true;
+					document.getElementById("UiBar").hidden = (!(`+opts.ui+`));
+				}
+				vm.setCloudProvider(gvbvdxxCloudProvider); //set my cloud provider to it.
+				keyDownEnabled = true; //enable the keys, cause we are starting the project, and we need to make sure the keys can be resitered
+		};
+		
+		</script>
+	</body>
+</html
+`
+	log("Ziping Html...");
+	zip.file("index.html", html);
+	log("2HTML Complete!!!");
+	log("Downloading...");
+	zip.generateAsync({type:"blob"})
+	.then(function(content) {
+		var a = document.createElement("a");
+		if (opts.title) {
+			a.download = opts.title;
+		} else {
+			a.download = "result.zip";
+		}
+		a.setAttribute("href",URL.createObjectURL(content));
+		a.click();
+	});
+}
+function startCompile() {
+	if (window.projectFile) {
+		var clones = "300";
+		if (document.getElementById("tw_runtime_maxClones").checked) {
+			clones = "Infinity";
+		}
+		compile({
+			title:document.getElementById("title").value,
+			turbomode:document.getElementById("autoturbo").checked,
+			compatibilityMode:document.getElementById("compadmode").checked,
+			nostrech:document.getElementById("nostrech").checked,
+			username:document.getElementById("username").value.replaceAll('"',"_"),
+			clicktostart:document.getElementById("clicktostart").checked,
+			quality:document.getElementById("quality").value,
+			projectid:document.getElementById("projectid").value.replaceAll('"',"_"),
+			servername:document.getElementById("servername").value.replaceAll('"',"_"),
+			easymode:document.getElementById("easymode").checked,
+			loadingScreenText:"Loading Assets...".replaceAll('"',"_"),
+			addNumbersToUsername:document.getElementById("addNumbersToUsername").checked,
+			ui:document.getElementById("ui").checked,
+			runtimeOpts:{
+				maxClones: clones,
+				miscLimits: document.getElementById("tw_runtime_MiscLimits"),
+				fencing: document.getElementById("tw_runtime_fencing")
+			}
+		});
+	} else {
+		cons.innerHTML = "";
+		log("no file selected!");
+	}
+}

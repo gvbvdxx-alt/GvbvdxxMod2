@@ -1,0 +1,61 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+
+
+<title>Gvbvdxx Mod 2: Featured Projects</title>
+
+<style>
+body {
+	display: block;
+    text-align: -webkit-center;
+	font-family:arial;
+}
+.project {
+	font-size:30px;
+	width:fit-content;
+	height:fit-content;
+	border-style:solid;
+	border-color: #037bfc;
+	background: #e6f2ff;
+	border-radius:10px;
+	transition: 0.1s;
+	cursor:pointer;
+}
+.project > a {
+	color:black;
+}
+.project:hover {
+	border-color: blue;
+	background: blue;
+}
+
+</style>
+
+</head>
+
+
+
+<body>
+<div id="featured">
+<h1>Featured Projects:</h1>
+
+
+</div>
+
+<script>
+(
+async function () {
+	window.studioDataFetched = await fetch("https://cors.9gr.repl.co/api.scratch.mit.edu/studios/31683180/projects",{method:"get"});
+	window.studioData = JSON.parse(await studioDataFetched.text());
+	for (var i in studioData) {
+		var div = document.createElement("div");
+		div.setAttribute("class","project");
+		div.innerHTML = `<a href="${'index.html#'+studioData[0].id}"><b>${studioData[i].title}</b><br><img src="${studioData[i].image}" width=360 height=300></a>`;
+		document.getElementById("featured").appendChild(div);
+	}
+}
+)()
+</script>
+</body>
+</html>

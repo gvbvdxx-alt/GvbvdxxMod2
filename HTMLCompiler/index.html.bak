@@ -1,0 +1,123 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>GvbvdxxMod2HTML</title>
+	</head>
+	<body style="background-color:black;">
+		<script src="jszip.min.js"></script>
+		<center>
+			<h1 style="font-family:arial; color:white;">GvbvdxxMod2HTML</h1>
+			<p style="font-family:arial; color:white;">Convert .sb3 projects into .HTML!</p>
+			<div style="border-color:white; border-style:solid; width:100%; height:autio;">
+				<center>
+					<p style="font-family:arial; color:white;">
+						Options:
+						<br></br><br></br>
+						<!--Runtime Options-->
+						<h1 style="font-family:arial; color:white;">Runtime options:</h1><br><br>
+						<label for="tw_runtime_maxClones" style="font-family:arial; color:white;">Clone cap (Max Clones):</label>
+						<input type="checkbox" id="tw_runtime_maxClones" checked><br><br>
+						<label for="tw_runtime_maxClones" style="font-family:arial; color:white;">Fencing:</label>
+						<input type="checkbox" id="tw_runtime_fencing" checked><br><br>
+						<label for="tw_runtime_maxClones" style="font-family:arial; color:white;">Misc Limits:</label>
+						<input type="checkbox" id="tw_runtime_MiscLimits" checked><br><br>
+						<label for="tw_runtime_maxClones" style="font-family:arial; color:white;">Framerate:</label>
+						<input type="number" min=5 max=125 id="tw_runtime_framerate"><br>
+						<!--Project options-->
+						<h1 style="font-family:arial; color:white;">Project options:</h1>
+						<label style="font-family:arial; color:white;" for="fileselect">Project File:</label>
+						<input style="background-color:white;" type="file" id="fileselect"><br>
+						<br>
+						<label style="font-family:arial; color:white;" for="icon">Favicon File:</label>
+						<input style="background-color:white;" type="file" id="icon"><br>
+						<p style="font-family:arial; color:white;">
+						A favicon is an icon on the tab,
+						changing it will change change the tab icon.
+						</p>
+						<label style="font-family:arial; color:white;" for="title" value="My Project">Title (Tabs Title):</label>
+						<input type="text" id="title"><br>
+						<label style="font-family:arial; color:white;" for="compadmode">Easy Mode:</label><input type="checkbox" id="easymode" onchange="document.getElementById('notice').hidden = this.checked;" checked><br>
+						<p style="font-family:arial; color:white;">
+							Easy Mode Makes It Easy To Use, Just Download And Click index.html, This Makes It Easer To Set Up For Use.
+							<br>
+							NOTE:please backup/save your project when using easy mode because the project file is stored on the html file.
+						</p><br>
+						<label style="font-family:arial; color:white;" for="projectid">Project ID:</label>
+						<input type="text" id="projectid" checked><br><br>
+						<p style="font-family:arial; color:white;">" will be replaced with underscores. you can add spaces if you like.</p>
+						<br>
+						<label style="font-family:arial; color:white;" for="servername">Server Name (on <a href="glitch.com" target="_blank">glitch website</a>):</label>
+						<input type="text" value="gvbvdxx-mod-html-cloud-data" id="servername" checked><br><br>
+						<p style="font-family:arial; color:white;">" will be relaced with underscores.</p>
+						<p style="font-family:arial; font-weight:bold; color:red;">DO NOT CHANGE THE SERVER NAME IF YOU DONT KNOW WHAT YOUR DOING!</p>
+						<br>
+						<!--Display options-->
+						<h1 style="font-family:arial; color:white;">Display options:</h1>
+						<label style="font-family:arial; color:white;" hidden for="nostrech">Keep aspect ratio (do not strech screen):</label>
+						<input type="checkbox" id="nostrech" checked hidden><br>
+						<label style="font-family:arial; color:white;" for="username">Username:</label>
+						<input type="text" id="username" checked value="player"><br><br>
+						<label style="font-family:arial; color:white;" for="addNumbersToUsername">Add Numbers To End Of Username?:</label>
+						<input type="checkbox" id="addNumbersToUsername" checked><br><br>
+						<br>	
+						<label style="font-family:arial; color:white;" for="ui">Add Project Controls? (UI):</label>
+						<input type="checkbox" id="ui"><br><br>
+
+						<label style="font-family:arial; color:white;" for="quality">Screen quality:</label>
+						<select id="quality">
+							<option value="hd" selected>HD</option>
+							<option value="pixelated">Pixelated</option>
+						</select><br>
+						<p style="font-family:arial; color:white;">
+						HD is recommended for stuff with vector graphics.<br>
+						Pixelated is recommended for pixelated stuff.
+						</p>
+						
+						<!--Startup options-->
+						<h1 style="font-family:arial; color:white;">Startup options:</h1>
+						<label style="font-family:arial; color:white;" for="clicktostart">Click to start:</label>
+						<input type="checkbox" id="clicktostart" checked><br>
+						<p style="font-family:arial; color:white;">
+						Notice:<br>
+						browsers do not let pages play audio until the page has been interacted with,<br>
+						if your making animatons and converting them here, you should keep this enabled.
+						</p><br>
+						<label style="font-family:arial; color:white;" for="autoturbo">Enable turbomode on load:</label>
+						<input type="checkbox" id="autoturbo"><br>
+						<label style="font-family:arial; color:white;" for="compadmode">30fps Mode:</label>
+						<input type="checkbox" id="compadmode" checked><br>
+					</p>
+					<div id="notice" hidden>
+						<h1 style="font-family:arial; color:white;">NOTICE:</h1>
+						<p style="font-family:arial; color:white;">
+						You can only run this on localhosts, websites and electron apps,<br>
+						i say create a github account, then use github pages to do so.<br>
+						go <a href="https://attacomsian.com/blog/local-web-server" target="_blank">here</a> to host a free localhost server.
+						this is because the page is looking for files by requesting for them.<br>
+						but because of an security reason you cant read from the drive,<br>
+						for saftey reasons. you can only do this with electron, or localhosts.<br>
+						Please Enable Easy Mode If You Dont Want To Do All Of This.
+						</p>
+					</div>
+				</center>
+			</div>
+		</center>
+		<button style="cursor:pointer;" onclick="startCompile();">To HTML!!</button>
+		<div style="
+			width:100%;
+			height:500px;
+			resize:vertical;
+			background-color:grey;
+			overflow-y:auto;
+			color:darkgrey;
+			font-family:arial;
+			font-weight:bold;
+		"id="console">
+				
+		</div>
+		<script src="compiler.js?n=1"></script>
+		<script>
+		document.getElementById("projectid").value = "project"+Math.round(Math.random()*100000);
+		</script>
+	</body>
+</html>
