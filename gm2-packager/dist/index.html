@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		
+		<link rel="icon" href="static/favicon.png"></link>
+		
+		<title>Gvbvdxx Mod 2 - Project Packager</title>
+	</head>
+
+	<body>
+		
+		<noscript>
+		
+		In order to package projects, javascript must be enabled,
+		please enable it.
+		
+		</noscript>
+		
+		<script src="main.js?n=1"></script>
+		<!--Only used for dev mode-->
+		<script>
+			var updateWS = new WebSocket("ws://localhost:5737");
+			updateWS.addEventListener("message", (e) => {
+				if (e.data == "UPDATE") {
+					window.location.reload();
+				}
+			});
+		</script>
+	</body>
+</html>

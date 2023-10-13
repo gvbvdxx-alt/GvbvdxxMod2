@@ -1,0 +1,6 @@
+var gui = require("./reducers/gui.js");
+window.GUIModule = gui;
+var tw = require("./reducers/tw.js");
+window.TWModule = tw;
+var vm = require("./reducers/vm.js");
+window.VMModule = vm;

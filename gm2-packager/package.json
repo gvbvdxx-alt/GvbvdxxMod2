@@ -1,0 +1,15 @@
+{
+  "name": "gm2-packager",
+  "version": "1.0.0",
+  "description": "Puts scratch and gvbvdxx mod projects, into a playable html file.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node watcher.js"
+  },
+  "author": "gvbvdxx",
+  "license": "MIT",
+  "dependencies": {
+    "gvbvdxx-pack-2": "^1.5.0",
+    "ws": "^8.13.0"
+  }
+}

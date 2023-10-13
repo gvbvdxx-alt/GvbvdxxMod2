@@ -1,0 +1,22 @@
+{
+  "name": "gm2helperv2",
+  "version": "1.0.0",
+  "description": "The helper for the roku extension and for any other extension that needs the helper.",
+  "main": "index.js",
+  "bin": "index.js",
+  "scripts": {
+    "test": "node index.js",
+	"build": "pkg ."
+  },
+  "pkg": {
+    "scripts": "./src",
+    "outputPath": "packaged"
+  },
+  "author": "Gvbvdxx",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.27",
+    "pkg": "^5.8.1",
+    "ws": "^8.13.0"
+  }
+}

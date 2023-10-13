@@ -1,0 +1,32 @@
+body {
+	font-family:arial;
+	background:#fffbeb;
+}
+.buttonOrange {
+	color:white;
+	border-radius:8px;
+	width:auto;
+	height:35px;
+	border:none;
+	font-weight:bold;
+	background-color:#e6bc49;
+	transition:0.07s;
+}
+.buttonOrange:hover {
+	background-color:#ba993d;
+	cursor:pointer;
+}
+.packager-div {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	margin-left: calc((100vw - 300px) / -2);
+	width: calc(100vw - 300px);
+	background:#ffffff;
+	height: fit-content;
+	min-height: calc(100vh - 10px);
+	border-color:#d9d9d9;
+	border-style:solid;
+	border-radius:10px;
+	border-width:5px;
+}
