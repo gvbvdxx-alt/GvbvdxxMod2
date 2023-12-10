@@ -266,6 +266,17 @@ class Interface extends React.Component {
 								Gvbvdxx Mod 2 is created by <a href="https://scratch.mit.edu/users/gvbvdxx" target="_blank">gvbvdxx</a>.
 								It is a modifcation on top of TurboWarp.
 								It also adds extensions more to use, to make more powerful projects.<br/>
+							</span><br/>
+							<span>
+							<b className={styles.gvbNote}>
+							NOTE:
+							</b>
+							<br/>
+							Im no longer going to repond to questions on scratch,
+							on my main account anymore,
+							it was blocked and it will never be back...
+							<br/>
+							But... im now using <a href="https://scratch.mit.edu/users/gvbmod2-dev" target="_blank">this account</a> to let you know about updates and other things related to Gvbvdxx Mod 2!
 							</span>
                         </React.Fragment>
                     ) : null}
