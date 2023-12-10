@@ -10,6 +10,8 @@ import classNames from 'classnames';
 import bluetoothIconURL from './bluetooth.svg';
 import internetConnectionIconURL from './internet-connection.svg';
 
+import softwareIconURL from './software.svg';
+
 /* eslint-disable react/prefer-stateless-function */
 class LibraryItemComponent extends React.PureComponent {
     render () {
@@ -64,20 +66,28 @@ class LibraryItemComponent extends React.PureComponent {
                             {this.props.bluetoothRequired || this.props.internetConnectionRequired ? (
                                 <div>
                                     <div>
-                                        <FormattedMessage
-                                            defaultMessage="Requires"
-                                            description="Label for extension hardware requirements"
-                                            id="gui.extensionLibrary.requires"
-                                        />
+                                        <label>Requires (to function properly):</label>
                                     </div>
                                     <div
                                         className={styles.featuredExtensionMetadataDetail}
                                     >
+										{this.props.softwareRequired ? (
+                                            <div>
+												<img src={softwareIconURL} />
+												<label className={styles.smallRequiredText}>Gvbvdxx Mod 2 Helper Software.</label>
+											</div>
+                                        ) : null}
                                         {this.props.bluetoothRequired ? (
-                                            <img src={bluetoothIconURL} />
+                                            <div>
+												<img src={bluetoothIconURL} />
+												<label className={styles.smallRequiredText}>Bluetooth.</label>
+											</div>
                                         ) : null}
                                         {this.props.internetConnectionRequired ? (
-                                            <img src={internetConnectionIconURL} />
+											<div>
+												<img src={internetConnectionIconURL} />
+												<label className={styles.smallRequiredText}>Internet connection.</label>
+											</div>
                                         ) : null}
                                     </div>
                                 </div>

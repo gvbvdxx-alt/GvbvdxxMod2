@@ -32,7 +32,7 @@ var Monitors = {
                     sliderMax,
                     isDiscrete,
                     targetId
-                } = record
+                } = record;
 
                     if (!monitorStates[id]) {
                         var label = document.createElement('span')
@@ -100,54 +100,36 @@ var Monitors = {
                              : lastValue !== value
                             if (differed) {
                                 if (Array.isArray(value)) {
-                                    if (lastValue.length !== rowElems.length) {
-										//GOD, this error spams the whole console.
-                                        //console.error(
-                                        //    "List monitor rowElems and lastValue lengths don't match.")
-                                    }
-
+									var rowElements = [];
+									valueElem.innerHTML = "";
+									//although i will say, this method is inefficient, i had to do it.
+									//since there was some wierd monitor issue with it.
+									//so yeah, if your game has millions of items in one of the visible lists,
+									//its going to crash here.
                                     value.forEach((val, i) => {
-                                        if (true) {
                                             // Could also set width to (lastValue.length + '').length + 'ch'
                                             var index = document.createElement('div')
                                                 index.className = 'index'
                                                 index.textContent = i + 1
 
-                                                var value = document.createElement('div')
-                                                value.className = 'row-value'
+                                                var valueElement = document.createElement('div')
+                                                valueElement.className = 'row-value'
 
                                                 var row = document.createElement('div')
                                                 row.className = 'row'
-                                                row.append(index, value)
+                                                row.append(index, valueElement)
 
                                                 valueElem.append(row)
-                                                rowElems[i] = value;
-												//console.log(value);
-                                        }
-
-                                        if (lastValue[i] !== val) {
-											if (rowElems[i]) {
-												
-												rowElems[i].textContent = val;
-											}
-                                        }
+                                                valueElement.textContent = val;
                                     })
-
-                                    if (value.length < lastValue.length) {
-                                        for (var toRemove of rowElems.splice(
-                                                value.length,
-                                                lastValue.length - value.length)) {
-                                            toRemove.parentNode.remove()
-                                        }
-                                    }
                                 } else {
                                     // The HTMLifier used to use Number(value.toFixed(6)) but I don't
                                     // think Scratch does that for monitors
 									if (valueElem) {
 										if (!(mode === 'list')) {
-											valueElem.textContent = value
+											valueElem.textContent = record.value
 											if (slider) {
-												slider.value = value
+												slider.value = record.value
 											}
 										}
 									}

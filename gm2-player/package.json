@@ -6,7 +6,7 @@
   "author": "gvbvdxx",
   "license": "MIT",
   "scripts": {
-    "start": "webpack-dev-server --progress",
+    "start": "webpack-dev-server",
     "build": "webpack --progress",
     "testbuild": "http-server --port=6837 ./dist"
   },

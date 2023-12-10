@@ -18,7 +18,7 @@ monitorStylesReal.innerHTML = `
 				background-color: #8c8c8c;
 			}
 			.monitor {
-				color: black;
+				color: #575e75;
 				font-family: arial;
 				background-color: hsla(215, 100%, 95%, 1);
 				border-style: solid;
@@ -45,6 +45,7 @@ monitorStylesReal.innerHTML = `
 			background-color: rgb(255, 140, 26);
 			color: white;
 			height: 100%;
+			min-height:11px;
 			}
 			.default .monitor-value,
 			.slider .monitor-value {
@@ -70,13 +71,15 @@ monitorStylesReal.innerHTML = `
 			}
 			.large .monitor-label {
 			  display: none;
-			  
 			}
 			.large .monitor-value {
 			  font-size: 1rem;
 			  min-width: 100%;
 			  height:100%;
 			  width:fit-content;
+			  border-width: 1px;
+			  border-color: lightgrey;
+			  border-style: solid;
 			}
 			.list {
 			  padding: 0;
@@ -98,7 +101,7 @@ monitorStylesReal.innerHTML = `
 			  display: block;
 			  overflow-y: scroll;
 			  background: none;
-			  height: 84%;
+			  height: calc(100% - 20px);
 			}
 			.row {
 			  display: flex;

@@ -65,7 +65,7 @@ const handleClickAddonSettings = () => {
 
 const messages = defineMessages({
     defaultTitle: {
-        defaultMessage: 'Run Scratch projects faster',
+        defaultMessage: 'Make your projects fast, and more powerful.',
         description: 'Title of homepage',
         id: 'tw.guiDefaultTitle'
     }
@@ -252,35 +252,6 @@ class Interface extends React.Component {
                             {isBrowserSupported() ? null : (
                                 <BrowserModal isRtl={isRtl} />
                             )}
-                            <div className={styles.section}>
-                                <ProjectInput />
-                            </div>
-                            {(
-                                // eslint-disable-next-line max-len
-                                projectId === '0' || description.instructions === 'unshared' || description.credits === 'unshared'
-                            ) && (
-                                <div className={styles.unsharedUpdate}>
-                                    {/* I won't link these in the public website because there will be way */}
-                                    {/* too much spam if we do that, but here are the relevant links: */}
-                                    {/* https://github.com/LLK/scratch-gui/pull/8269 */}
-                                    {/* https://github.com/LLK/scratch-www/pull/6773 */}
-									
-                                    {(
-                                        description.instructions === 'unshared' ||
-                                        description.credits === 'unshared'
-                                    ) && (
-                                        <p>
-                                            {/* eslint-disable-next-line max-len */}
-                                            {'If the project was shared recently, then wait for a while, the Scratch API might take a moment to update.'}
-                                        </p>
-                                    )}
-                                </div>
-                            )}
-                            {hasCloudVariables && projectId !== '0' && (
-                                <div className={styles.section}>
-                                    <CloudVariableBadge />
-                                </div>
-                            )}
                             {description.instructions || description.credits ? (
                                 <div className={styles.section}>
                                     <Description
@@ -290,22 +261,16 @@ class Interface extends React.Component {
                                     />
                                 </div>
                             ) : null}
-                            <div className={styles.section}>
-                                <p>
-                                    <FormattedMessage
-                                        // eslint-disable-next-line max-len
-                                        defaultMessage="Gvbvdxx Mod 2, designed to make your Scratch projects into more powerful games, programs, and more!"
-                                        description="Description of Gvbvdxx Mod 2"
-                                        id="tw.home.description"
-                                    />
-                                </p>
-                            </div>
-                            <div className={styles.section}>
-                                <FeaturedProjects studio="33606945" />
-                            </div>
+							<hr/>
+							<span>
+								Gvbvdxx Mod 2 is created by <a href="https://scratch.mit.edu/users/gvbvdxx" target="_blank">gvbvdxx</a>.
+								It is a modifcation on top of TurboWarp.
+								It also adds extensions more to use, to make more powerful projects.<br/>
+							</span>
                         </React.Fragment>
                     ) : null}
                 </div>
+				
             </div>
         );
     }

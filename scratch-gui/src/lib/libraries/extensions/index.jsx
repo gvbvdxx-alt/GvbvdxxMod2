@@ -79,6 +79,11 @@ import userdatabig from './userdata/big.png';
 import rokusmall from './roku/small.png';
 import rokubig from './roku/big.png';
 
+import gm2HTML5Small from './html5/small.svg';
+import gm2HTML5Large from './html5/large.svg';
+
+import twExtsIcon from './tw/tw-icon.svg';
+
 var twExtensionList = [];
 
 for (var ext of TWExtensions.extensions) {
@@ -86,12 +91,16 @@ for (var ext of TWExtensions.extensions) {
 		twExtensionList.push({
 			name: ext.name,
 			extensionId: ext.id,
-			iconURL: "https://extensions.turbowarp.org/"+ext.image,
-			insetIconURL: null,
+			iconURL: require("./tw-extensions/"+ext.image),
+			insetIconURL: twExtsIcon,
 			description: (
-				<span>
-				{ext.description}
-				</span>
+				<div>
+					<span>
+					{ext.description}
+					</span>
+					<br/>
+					<b>NOTE: This extension is not by gvbvdxx, rather instead by TurboWarp.</b>
+				</div>
 			),
 			featured: true,
 			disabled: false,
@@ -131,7 +140,8 @@ export default [
             />
         ),
         extensionId: 'html5',
-        iconURL: jsDialogsBigIcon,
+		insetIconURL: gm2HTML5Small,
+        iconURL: gm2HTML5Large,
         description: (
             <FormattedMessage
                 defaultMessage="Create HTMl5 elements. Display sprite costumes out of the stage!"
@@ -157,7 +167,8 @@ export default [
         disabled: false,
         internetConnectionRequired: true,
         bluetoothRequired: false,
-        helpLink: ''
+        helpLink: '',
+		softwareRequired: true
 	},
 	{
         name: 'User Data',

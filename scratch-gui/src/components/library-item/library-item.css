@@ -178,6 +178,10 @@
     flex-direction: column;
 }
 
+.small-required-text {
+	font-size:10px;
+}
+
 .featured-extension-metadata-detail {
     height: 100%;
     padding-top: 0.4rem;

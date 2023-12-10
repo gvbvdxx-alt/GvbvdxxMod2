@@ -42,54 +42,58 @@ class ExtensionLibrary extends React.PureComponent {
         ]);
     }
     handleItemSelect (item) {
-		if (item.isBuggy) {
-			if (!confirm("This extension is not trusted, and it has some glitches and bugs, adding this in might make Gvbvdxx Mod 2 Collapse, or some blocks may not work correctly, BACK UP YOUR PROJECT FIRST BEFORE USING THESE. Do you want to add the extension now?")) {
+		if (!item.dontSelect) {
+			if (item.isBuggy) {
+				if (!confirm("This extension is not trusted, and it has some glitches and bugs, adding this in might make Gvbvdxx Mod 2 Collapse, or some blocks may not work correctly, BACK UP YOUR PROJECT FIRST BEFORE USING THESE. Do you want to add the extension now?")) {
+					return;
+				}
+			}
+			// eslint-disable-next-line no-alert
+			if (item.incompatibleWithScratch && !confirm(this.props.intl.formatMessage(messages.incompatible))) {
 				return;
 			}
+			const id = item.extensionId;
+			let url = item.extensionURL ? item.extensionURL : id;
+			const isCustomURL = !item.disabled && !id;
+			if (isCustomURL) {
+				window.onExtensionCustomSelect();
+				return;
+			}
+			
+			if (url && !item.disabled) {
+				if (this.props.vm.extensionManager.isExtensionLoaded(url)) {
+					this.props.onCategorySelected(id);
+				} else {
+					this.props.vm.extensionManager.loadExtensionURL(url)
+						.then(() => {
+							this.props.onCategorySelected(id);
+							if (isCustomURL) {
+								let newUrl = location.pathname;
+								if (location.search) {
+									newUrl += location.search;
+									newUrl += '&';
+								} else {
+									newUrl += '?';
+								}
+								newUrl += `extension=${encodeURIComponent(url)}`;
+								history.replaceState('', '', newUrl);
+							}
+						})
+						.catch(err => {
+							// eslint-disable-next-line no-alert
+							alert(err);
+						});
+				}
+			}
 		}
-        // eslint-disable-next-line no-alert
-        if (item.incompatibleWithScratch && !confirm(this.props.intl.formatMessage(messages.incompatible))) {
-            return;
-        }
-        const id = item.extensionId;
-        let url = item.extensionURL ? item.extensionURL : id;
-        const isCustomURL = !item.disabled && !id;
-		if (isCustomURL) {
-			window.onExtensionCustomSelect();
-			return;
-		}
-		
-		if (url && !item.disabled) {
-            if (this.props.vm.extensionManager.isExtensionLoaded(url)) {
-                this.props.onCategorySelected(id);
-            } else {
-                this.props.vm.extensionManager.loadExtensionURL(url)
-                    .then(() => {
-                        this.props.onCategorySelected(id);
-                        if (isCustomURL) {
-                            let newUrl = location.pathname;
-                            if (location.search) {
-                                newUrl += location.search;
-                                newUrl += '&';
-                            } else {
-                                newUrl += '?';
-                            }
-                            newUrl += `extension=${encodeURIComponent(url)}`;
-                            history.replaceState('', '', newUrl);
-                        }
-                    })
-                    .catch(err => {
-                        // eslint-disable-next-line no-alert
-                        alert(err);
-                    });
-            }
-        }
     }
     render () {
-        const extensionLibraryThumbnailData = extensionLibraryContent.map(extension => ({
-            rawURL: extension.iconURL || extensionIcon,
-            ...extension
-        }));
+        const extensionLibraryThumbnailData = extensionLibraryContent.map((extension) => {
+			return {
+				rawURL: extension.iconURL || extensionIcon,
+				...extension
+			}
+		});
         return (
             <LibraryComponent
                 data={extensionLibraryThumbnailData}
